@@ -150,8 +150,8 @@ See the comments on the `<fs-i18n>` element for a simple example.
         }
 
         var lang = this.domains[domain].locales[locale];
-        if (lang[msgId] && lang[msgId].message != undefined) {
-          return lang[msgId].message;
+        if (lang[msgId]) {
+          return lang[msgId];
         }
         return null;
       },

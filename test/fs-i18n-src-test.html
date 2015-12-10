@@ -30,13 +30,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="sourced-fs-i18n-fixture">
       <template>
-        <fs-i18n-src src-locales='{"en":{"hello-msg":"Hello!"},"ko":{"hello-msg":"안녕하세요!"},"fs":{"hello-msg":"Bonjour!"},"de":{"hello-msg":"Gutentag!"}}'></fs-i18n-src>
+        <fs-i18n-src src-locales='{"en":{"hello-msg":"Hello!"},"ko":{"hello-msg":"안녕하세요!"},"fr":{"hello-msg":"Bonjour!"},"de":{"hello-msg":"Gutentag!"}}'></fs-i18n-src>
       </template>
     </test-fixture>
 
     <script>
       (function() {
-        var srcLocales = {"en":{"hello-msg":"Hello!"},"ko":{"hello-msg":"안녕하세요!"},"fs":{"hello-msg":"Bonjour!"},"de":{"hello-msg":"Gutentag!"}};
+        var srcLocales = {"en":{"hello-msg":"Hello!"},"ko":{"hello-msg":"안녕하세요!"},"fr":{"hello-msg":"Bonjour!"},"de":{"hello-msg":"Gutentag!"}};
         suite((~location.search.indexOf('dom=shadow') ? 'Shadow DOM Tests' : 'Light DOM Tests'), function() {
 
           var blankEl, sourcedEl;
@@ -94,10 +94,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               });
               test('`getMsg` functions properly for each locale', function() {
                 assert.equal(sourcedEl.getMsg('hello-msg'), 'Hello!');
-                sourcedEl.locale = 'ko',
-                assert.equal(sourcedEl.getMsg('hello-msg'), '안녕하세요!');
-                sourcedEl.locale = 'fr',
-                assert.equal(sourcedEl.getMsg('hello-msg'), 'Bonjour!');
+                assert.equal(sourcedEl.getMsg('hello-msg', 'ko'), '안녕하세요!');
+                assert.equal(sourcedEl.getMsg('hello-msg', 'fr'), 'Bonjour!');
               });
             });
           });
