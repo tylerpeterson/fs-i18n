@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/FamilySearchElements/fs-i18n.svg?branch=master)](https://travis-ci.org/FamilySearchElements/fs-i18n)
 #i18-n & i18-n-domain
 
 This magic duo helps with translating strings.
