@@ -6,7 +6,8 @@ Or see the LICENSE file that comes with this code.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../dom-purify/dom-purify-behavior.html">
-<link rel="import" href="i18-n-domain.html">
+<link rel="import" href="./fs-i18n-src.html">
+<link rel="import" href="./fs-i18n-behavior.html">
 
 <!--
 # <i18-n>
@@ -93,10 +94,10 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
 @demo demo/index.html
 @homepage https://pkaske.github.io/i18-n
 -->
-<dom-module id="i18-n"></dom-module>
+<dom-module id="fs-i18n"></dom-module>
 <script>
   Polymer({
-    is: 'i18-n',
+    is: 'fs-i18n',
 
     behaviors: [
       Polymer.DomPurifyBehavior   /* Use the dom-purify-behavior to sanitize any html before it goes live. */
@@ -104,20 +105,17 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
 
     properties: {
       /**
-       * The message id (key) of the message to get and fill in.
+       * Shortcut property for `domain` and `msgid`.
+       * Use `domain-name.msgid` or just `msgid` to use default domain.
        */
-      msgid: {
+      key: {
         type: String,
         value: null
       },
 
-      /**
-       * Shortcut property for `domain` and `msgid`.
-       * Use `domain-name.msgid` or just `msgid` to use default domain.
-       */
-      m: {
+      msgid: {
         type: String,
-        value: null
+        computed: '_computeMsgid(key)'
       },
 
       /**
@@ -126,7 +124,7 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
        */
       domain: {
         type: String,
-        value: 'default'
+        computed: '_computeDomain(key)'
       },
 
       /**
@@ -162,7 +160,9 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
     },
 
     // Holds reference to the global `I18nCache.domains` object
-    domains: null,
+    get domains() {
+      return window.I18nCache.domains;
+    },
 
     /**
      * Check if at least one `<i18-n-domain>` elements exists.
@@ -172,11 +172,6 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
       if (!window.I18nCache) {
         console.warn(this.localName + ': Global I18nCache object missing. Have you added at least one i18-n-domain element?');
         return;
-      }
-
-      if (this.domain == 'default' && this.m && this.m.indexOf('.') != -1) {
-        var parts = this.m.split('.');
-        this.domain = parts[0];
       }
 
       this.domains = window.I18nCache.domains;
@@ -191,14 +186,6 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
     attached: function() {
       // Register instance to the domain.
       this.domains[this.domain].instances.push(this);
-
-      if (!this.msgid && this.m) {
-        var parts = this.m.split('.');
-        if (parts.length > 0) {
-          parts.shift();
-          this.msgid = parts.join('.');
-        }
-      }
 
       var locale = this.domains[this.domain].activeLocale || 'en';
 
@@ -218,25 +205,39 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
       }
     },
 
+    _computeMsgid: function(key) {
+      if (!~key.indexOf('.')) return key;
+      key = key.split('.')
+      key.shift();
+      return key.join('.');
+    },
+
+    _computeDomain: function(key) {
+      if (!~key.indexOf('.')) return 'default';
+      return key.split('.')[0];
+    },
+
     /**
      * Get the translation string and replace the content of the element.
      * `dom-purify-behavior` is used to sanitize the html before it's inserted.
      */
     update: function(locale) {
-      if (this.provider && this.provide.length > 0) {
-        this._updateProvider(locale);
-        return;
-      }
-
-      var msg = this.domains[this.domain].locales[locale][this.msgid];
-      if (msg && msg.message) {
-        this._setValue(this.sanitizeHtml(msg.message));
-        if (!this.provider) {
-          this.innerHTML = this.value;
+      this.async(function() {
+        if (this.provider && this.provide.length > 0) {
+          this._updateProvider(locale);
+          return;
         }
-      } else {
-        console.warn(this.localName + ': "' + this.msgid + '" message id was not found');
-      }
+
+        var msg = this.domains[this.domain].locales[locale][this.msgid];
+        if (msg) {
+          this._setValue(this.sanitizeHtml(msg));
+          if (!this.provider) {
+            this.innerHTML = this.value;
+          }
+        } else {
+          console.warn(this.localName + ': "' + this.msgid + '" message id was not found');
+        }
+      }.bind(this));
     },
 
     _updateProvider: function(locale) {
@@ -251,12 +252,12 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
         for (var i in this.provide) {
           var msgId = this.provide[i];
           var msg = locale[msgId];
-          if (!msg || !msg.message) {
+          if (!msg) {
             console.warn(this.localName + ': "' + msgId + '" message id was not found');
             continue;
           }
 
-          values[msgId] = this.sanitizeHtml(msg.message);
+          values[msgId] = this.sanitizeHtml(msg);
         }
       }
 

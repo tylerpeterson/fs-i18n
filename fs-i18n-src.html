@@ -51,7 +51,7 @@ See the comments on the `<i18-n>` element for a simple example.
 @demo demo/index.html
 @homepage https://pkaske.github.io/i18-n
 -->
-<dom-module id="i18-n-domain">
+<dom-module id="fs-i18n-src">
   <template>
     <iron-ajax id="ajax"
       url="{{messagesUrl}}"
@@ -77,7 +77,7 @@ See the comments on the `<i18-n>` element for a simple example.
     };
 
     Polymer({
-      is: 'i18-n-domain',
+      is: 'fs-i18n-src',
 
       /**
        * The `i18-n-locale-ready` is fired after the locale was fetched and all `<i18n-msg>` elements were updated.
@@ -99,7 +99,15 @@ See the comments on the `<i18-n>` element for a simple example.
          * The default locale being used.
          */
         locale: {
-          type: String
+          type: String,
+          value: function() {
+            if (window.FS && typeof window.FS.simpleLocale === 'function') return FS.simpleLocale();
+            var lang = window.navigator.language;
+            if (lang) {
+              return lang.match(/(\w{2})/)[1];
+            }
+            return 'en';
+          }
         },
 
         /**
@@ -109,11 +117,17 @@ See the comments on the `<i18-n>` element for a simple example.
           type: String,
           value: 'lang',
           observer: '_messagesUrlChanged'
+        },
+
+        src: {
+          type: Object,
+          value: null,
+          observer: '_srcChanged'
         }
       },
 
       observers: [
-        '_shouldFetch(locale, messagesUrl)'
+        '_shouldFetch(locale, messagesUrl, src)'
       ],
 
       // Reference to the global `I18nCache.domains` object
@@ -163,7 +177,7 @@ See the comments on the `<i18-n>` element for a simple example.
       /**
        * Only fetch if a locale and a location is set.
        */
-      _shouldFetch: function(newLocale, messagesUrl) {
+      _shouldFetch: function(newLocale, messagesUrl, src) {
         if (this.getLocale(newLocale) != null) {
           this.domains[this.domain].activeLocale = newLocale;
           this._updateInstances(newLocale);
@@ -171,6 +185,8 @@ See the comments on the `<i18-n>` element for a simple example.
           return;
         }
 
+        if (src) return false;
+        
         this.async(function() {
           this._fetchLocale(newLocale);
         });
@@ -186,6 +202,17 @@ See the comments on the `<i18-n>` element for a simple example.
             this._fetchLocale(this.locale, true);
           });
         }
+      },
+
+      _srcChanged: function(src) {
+        if (!src) return;
+        if (!this.domains) this.domains = {};
+        if (!this.domains[this.domain]) this.domains[this.domain] = {
+          activeLocale: this.locale,
+          locales: {},
+          instances: []
+        };
+        this.domains[this.domain].locales = src;
       },
 
       /**
@@ -206,7 +233,7 @@ See the comments on the `<i18-n>` element for a simple example.
         domainObj.locales[locale] = {};
         this.domains[this.domain] = domainObj;
 
-        var domain = this.domain != 'default' ? this.domain + '-' : '';
+        var domain = this.domain != 'default' ? this.domain + '_' : '';
         var url = this.messagesUrl + '/' + domain + locale + '.json';
         this.$.ajax.url = url;
         var request = this.$.ajax.generateRequest();
