@@ -1,8 +1,8 @@
 {
-  "name": "i18-n",
-  "version": "1.2.1",
+  "name": "fs-i18n",
+  "version": "0.1.0",
   "authors": [
-    "Peter Kaske <p.kaske@gmail.com>"
+    "Josh Crowther <jshcrowthe@gmail.com>"
   ],
   "description": "Translation elements build with polymer.",
   "keywords": [
@@ -17,7 +17,7 @@
   ],
   "main": "i18-n-domain.html",
   "license": "MIT",
-  "homepage": "https://github.com/pkaske/i18-n/",
+  "homepage": "https://github.com/FamilySearchElements/fs-i18n/",
   "ignore": [
     "/.*",
     "/tests/"
