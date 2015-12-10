@@ -8,24 +8,30 @@ Or see the LICENSE file that comes with this code.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>i18-n demo</title>
+    <title>fs-i18n demo</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-    <link rel="import" href="../i18-n.html">
-    <link rel="import" href="../i18-n-domain.html">
+    <link rel="import" href="../fs-i18n.html">
+    <link rel="import" href="../fs-i18n-src.html">
+    <link rel="import" href="./demo-comp/demo-comp.html">
   </head>
   <body>
     <!-- Provides the 'default' domain in english -->
-    <i18-n-domain id="i18nDomain"
+    <fs-i18n-src id="i18nDomain"
       messages-url="locales">
-    </i18-n-domain>
+    </fs-i18n-src>
 
     <!-- Provides the 'demo-domain' domain in german -->
-    <i18-n-domain id="demoDomain"
+    <fs-i18n-src id="demoDomain"
       domain="demo-domain"
       locale="de"
       messages-url="locales">
-    </i18-n-domain>
+    </fs-i18n-src>
+
+    <!-- Provides the 'existing-domain' domain for all languages via a src attribute-->
+    <fs-i18n-src id="existingDomain"
+      domain="existing-domain" src='{"ko":{"hi":"안녕하세요"},"de":{"hi":"Gutentag"},"en":{"hi":"Hello"}}'>
+    </fs-i18n-src>
 
     <div>
       <label for="">Choose language for default domain</label>
@@ -44,20 +50,41 @@ Or see the LICENSE file that comes with this code.
       </select>
     </div>
 
+    <div>
+      <label for="">Choose language for 'existing-domain' domain</label>
+      <select id="existingDomainSelector">
+        <option selected>en</option>
+        <option>de</option>
+        <option>ko</option>
+      </select>
+    </div>
+
     <p style="margin-top: 50px;">Locale domain: <strong>default</strong></p>
-    <i18-n msgid="welcome">This is some placeholder text. It's msgid is 'welcome'.</i18-n>
+    <fs-i18n key="welcome">This is some placeholder text. It's msgid is 'welcome'.</fs-i18n>
 
     <p style="margin-top: 50px;">Locale domain: <strong>demo-domain</strong></p>
-    <i18-n m="demo-domain.special">The special text will appear here...</i18-n>
+    <fs-i18n key="demo-domain.special">The special text will appear here...</fs-i18n>
+
+    <p style="margin-top: 50px;">Locale domain: <strong>demo-domain</strong></p>
+    <fs-i18n key="existing-domain.hi">Standby text for existing src</fs-i18n>
+
+    <p style="margin-top: 50px;">Using a <strong>&lt;demo-comp&gt;</strong> component</p>
+    <demo-comp></demo-comp>
 
     <script>
       var i18nDomain = document.querySelector('#i18nDomain');
       var demoDomain = document.querySelector('#demoDomain');
+      var existingDomain = document.querySelector('#existingDomain');
       var langSelector = document.querySelector('#langSelector');
       var langSelectorDemo = document.querySelector('#langSelectorDomain');
+      var existingDomainSelector = document.querySelector('#existingDomainSelector');
 
       langSelector.addEventListener('change', function() {
         i18nDomain.locale = this.value;
+      });
+
+      existingDomainSelector.addEventListener('change', function() {
+        existingDomain.locale = this.value;
       });
 
       langSelectorDemo.addEventListener('change', function() {
