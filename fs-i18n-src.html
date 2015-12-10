@@ -1,55 +1,44 @@
-<!--
-@license
-Copyright (c) 2015 Peter Kaske <p.kaske@gmail.com>. All rights reserved.
-This code may only be used under the MIT license found at http://opensource.org/licenses/MIT.
-Or see the LICENSE file that comes with this code.
--->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 
 <!--
-# <i18-n-domain>
-These elements were heavily inspired by the `<i18n-msg>` element, written by [ebidel](https://github.com/ebidel/i18n-msg).
+# <fs-i18n-src>
+These elements were heavily inspired by the `<i18n-msg>` element, written by [ebidel](https://github.com/ebidel/i18n-msg) and were based on the `<i18-n>` and 
+`<i18-n-domain>` components written by p.kaske.
 
-The system consists of two elements working together: `<i18-n>` and `<i18-n-domain>`
+The system consists of two elements working together: `<fs-i18n>` and `<fs-i18n-src>`
 
-You need at least one `<i18-n-domain>` in your document. It loads the locale file via `<iron-ajax>` and fills a `I18nCache` global with the translation strings.
+You need at least one `<fs-i18n-src>` in your document. It loads the locale file via `<iron-ajax>` and fills a `I18nCache` global with the translation strings.
 As the name suggests, this element also provides a language domain (named `default` if no other was set).
 
-`<i18-n>` elements can define a language domain they belong to and will only be filled with translation string from that domain.
+`<fs-i18n>` elements can define a language domain they belong to and will only be filled with translation string from that domain.
 
 The domain element provides some public methods to get translation strings.
 
 <strong>Note:</strong> Locale files are only fetched once.
 
 Locale files of the `default` domain must use the locale as the filename:
-`lang/en.json`, `lang/de.json`, `lang/fr.json`
+`locales/en.json`, `locales/de.json`, `locales/fr.json`
 
-Locale files of any domain other than `default` must prepend the domain name followed by a `-`:
+Locale files of any domain other than `default` must prepend the domain name followed by an `_`:
 
-"`lang/mydomain-en.json`", "`lang/mydomain-de.json`" or "`lang/mydomain-fr.json`"
+"`locales/mydomain_en.json`", "`locales/mydomain_de.json`" or "`locales/mydomain_fr.json`"
 
 ### Example of a locale file
 
 ```json
 {
-  "welcome-text": {
-    "description": "some description for internal use",
-    "message": "Welcome!"
-  },
-  "goodbye-text": {
-    "description": "some description for internal use",
-    "message": "Goodbye!"
-  }
+  "welcome-text": "Welcome!"
+  "goodbye-text": "Goodbye!"
 }
 ```
 
 ## Example
-See the comments on the `<i18-n>` element for a simple example.
+See the comments on the `<fs-i18n>` element for a simple example.
 
-@element i18-n-domain
+@element <fs-i18n-src>
 @demo demo/index.html
-@homepage https://pkaske.github.io/i18-n
+@homepage http://familysearchelements.github.io/fs-i18n
 -->
 <dom-module id="fs-i18n-src">
   <template>
@@ -80,9 +69,9 @@ See the comments on the `<i18-n>` element for a simple example.
       is: 'fs-i18n-src',
 
       /**
-       * The `i18-n-locale-ready` is fired after the locale was fetched and all `<i18n-msg>` elements were updated.
+       * The `fs-i18n-locale-ready` is fired after the locale was fetched and all `<i18n-msg>` elements were updated.
        *
-       * @event i18-n-locale-ready
+       * @event fs-i18n-locale-ready
        * @detail {{locale: String}}
        */
 
@@ -115,11 +104,22 @@ See the comments on the `<i18-n>` element for a simple example.
          */
         messagesUrl: {
           type: String,
-          value: 'lang',
+          value: 'locales',
           observer: '_messagesUrlChanged'
         },
 
-        src: {
+        /**
+         * An object containing the source locales for the given domain. Looks like
+         * the following.
+         * ```
+         * {
+         *   "en": { ... },
+         *   "ko": { ... },
+         * }
+         * ```
+         * @type {Object}
+         */
+        srcLocales: {
           type: Object,
           value: null,
           observer: '_srcChanged'
@@ -127,7 +127,7 @@ See the comments on the `<i18-n>` element for a simple example.
       },
 
       observers: [
-        '_shouldFetch(locale, messagesUrl, src)'
+        '_shouldFetch(locale, messagesUrl, srcLocales)'
       ],
 
       // Reference to the global `I18nCache.domains` object
@@ -181,7 +181,7 @@ See the comments on the `<i18-n>` element for a simple example.
         if (this.getLocale(newLocale) != null) {
           this.domains[this.domain].activeLocale = newLocale;
           this._updateInstances(newLocale);
-          this.fire('i18-n-locale-ready', { 'domain': this.domain, 'locale': newLocale });
+          this.fire('fs-i18n-locale-ready', { 'domain': this.domain, 'locale': newLocale });
           return;
         }
 
@@ -229,7 +229,7 @@ See the comments on the `<i18-n>` element for a simple example.
           instances: []
         };
 
-        // Set the locale we're about to fetch. This prevents duplicate requests by other `i18-n-domain` elements.
+        // Set the locale we're about to fetch. This prevents duplicate requests by other `<fs-i18n-src>` elements.
         domainObj.locales[locale] = {};
         this.domains[this.domain] = domainObj;
 
@@ -249,11 +249,11 @@ See the comments on the `<i18-n>` element for a simple example.
         this.domains[this.domain].activeLocale = locale;
         this._updateInstances(locale);
 
-        this.fire('i18-n-locale-ready', { 'domain': this.domain, 'locale': locale });
+        this.fire('fs-i18n-locale-ready', { 'domain': this.domain, 'locale': locale });
       },
 
       /**
-       * Notify all `<i18-n>` instances of a particular language domain that they should update themselfs.
+       * Notify all `<fs-i18n>` instances of a particular language domain that they should update themselfs.
        */
       _updateInstances: function(locale) {
         var instances = this.domains[this.domain].instances;

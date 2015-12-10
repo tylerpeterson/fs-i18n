@@ -1,98 +1,104 @@
-<!--
-@license
-Copyright (c) 2015 Peter Kaske <p.kaske@gmail.com>. All rights reserved.
-This code may only be used under the MIT license found at http://opensource.org/licenses/MIT.
-Or see the LICENSE file that comes with this code.
--->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../dom-purify/dom-purify-behavior.html">
 <link rel="import" href="./fs-i18n-src.html">
 <link rel="import" href="./fs-i18n-behavior.html">
 
 <!--
-# <i18-n>
-These elements were heavily inspired by the `<i18n-msg>` element, written by [ebidel](https://github.com/ebidel/i18n-msg).
+# <fs-i18n>
+These elements were heavily inspired by the `<i18n-msg>` element, written by [ebidel](https://github.com/ebidel/i18n-msg) and were based on the `<i18-n>` and 
+`<i18-n-domain>` components written by p.kaske.
 
-The system consists of two elements working together: `<i18-n>` and `<i18-n-domain>`
+The system consists of two elements working together: `<fs-i18n>` and `<fs-i18n-src>`
 
-All `<i18-n>` elements replace their content with translated strings from a `I18nCache` global, filled by `<i18-n-domain>` element(s).
-`<i18-n>` elements can also define a language domain they belong to and will only be filled with translation string from that domain.
+All `<fs-i18n>` elements replace their content with translated strings from a `I18nCache` global, filled by `<fs-i18n-src>` element(s).
+`<fs-i18n>` elements can also define a language domain they belong to and will only be filled with translation string from that domain.
 
 <strong>Notes:</strong>
-- The language to display isn't set on the `<i18-n>` elements but on the `<i18-n-domain>`.
-- All assigned `<i18-n>` elements are automatically updated after the locale was changed on the domain element.
-- Each `<i18-n>` kowns three modes: `Simple` mode, `Simple Provider` mode and `List Provider` mode. See examples how it works.
+- The language to display isn't set on the `<fs-i18n>` elements but on the `<fs-i18n-src>`.
+- All assigned `<fs-i18n>` elements are automatically updated after the locale was changed on the domain element.
+- Each `<fs-i18n>` kowns three modes: `Simple` mode, `Simple Provider` mode and `List Provider` mode. See examples how it works.
 
 ## Example: Simple Mode
 
-That is, `<i18-n>` translates exactly one message and displays it.
+That is, `<fs-i18n>` translates exactly one message and displays it.
 
-1. Define the translation domains (just omit the `domain` attribute for the default domain). All assigned `<i18-n>` will use the german translations.
-2. Throw `<i18-n>` element on your page. Optionally with a domain (by default they belong to `default`).
+1. Define the translation domains (just omit the `domain` attribute for the default domain). All assigned `<fs-i18n>` will use the german translations.
+2. Throw `<fs-i18n>` element on your page. Optionally with a domain (by default they belong to `default`).
 
 ```html
-  <i18-n-domain
-    messages-url="path/to/locales"
-    locale="de"></i18-n-domain>
+<fs-i18n-src
+  messages-url="path/to/locales"
+  locale="de"></fs-i18n-src>
 
-  <i18-n-domain
-    messages-url="path/to/some/other/locales"
-    domain="foobar"
-    locale="de"></i18-n-domain>
+<fs-i18n-src
+  messages-url="path/to/some/other/locales"
+  domain="foobar"
+  locale="de"></fs-i18n-src>
 
-  <p>
-    <i18-n msgid="welcome-text">This will be replaced with the welcome text from the default domain.</i18-n>
-  </p>
-  <p>
-    <i18-n domain="foobar" msgid="welcome-text">This will be replaced with the translation string from <strong>path/to/some/other/locales/foobar-de.json</strong></i18-n>
-  </p>
+<p>
+  <fs-i18n key="welcome-text">This will be replaced with the welcome text from the default domain.</fs-i18n>
+</p>
+<p>
+  <fs-i18n key="foobar.welcome-text">This will be replaced from path/to/locales/foobar-de.json</fs-i18n>
+</p>
 ```
 
-## Example: Simple Provider Mode
+## Example: Provider Mode
 
-That is, `<i18-n>` translates exactly one message but doesn't displays it.
-Insteat you use its `value` attribute to do something with the translated string, like injecting it into an attribute of another element.
+That is, `<fs-i18n>` translates exactly one message but doesn't displays it.
+Instead you use its `value` attribute to do something with the translated string, like injecting it into an attribute of another element.
 
 ```html
-  Create your i18-n-domain element here (see first example)
+Create your fs-i18n-src element here (see first example)
 
-  <p>
-    The label is set by the i18-n.
-    <paper-input label="[[username]]"></paper-input>
-  </p>
-  <p>
-    This i18-n doesn't show the translation but you can use it's *value* attribute.
-    <i18-n provider domain="foobar" msgid="username" value="{{username}}"></i18-n>
-  </p>
+<p>
+  The label is set by the fs-i18n.
+  <paper-input label="[[username]]"></paper-input>
+</p>
+<p>
+  This fs-i18n doesn't show the translation but you can use it's *value* attribute.
+  <fs-i18n provider key="foobar.username" value="{{username}}"></fs-i18n>
+</p>
 ```
 
 ## Example: List Provider Mode
 
-That is, `<i18-n>` translates a list of message. It doesn't show the list, but you can access it via the `value` property.
+That is, `<fs-i18n>` translates a list of message. It doesn't show the list, but you can access it via the `value` property.
 In this mode the `msgid` property is ignored. Instead use the `provide` property to define the list you need.
 
 ```html
-  Create your i18-n-domain element here (see first example)
+Create your fs-i18n-src element here (see first example)
 
-  <p>
-    The label is set by the i18-n.
-    <paper-input label="[[translations.username]]"></paper-input>
-    <paper-input label="[[translations.password]]"></paper-input>
-  </p>
-  <p>
-    This i18-n provides a list of translations.
-    <i18-n provider provide='["username", "password"]' value="{{translations}}"></i18-n>
-    'translations' equals: { "username" : "...", "password" : "..." }
+<p>
+  The label is set by the fs-i18n.
+  <paper-input label="[[translations.username]]"></paper-input>
+  <paper-input label="[[translations.password]]"></paper-input>
+</p>
+<p>
+  This fs-i18n provides a list of translations.
+  <fs-i18n provider provide='["username", "password"]' value="{{translations}}"></fs-i18n>
+  `translations' equals: 
+    { 
+      "username" : "...", 
+      "password" : "..." 
+    }
 
-    Alternatively you can set 'provide' to '["*"]' and get all translations.
-    <i18-n provider provide='["*"]' value="{{allStrings}}"></i18-n>
-    'allStrings' equals: { "translation1" : "...", "translation2" : "...", "translation3" : "...", "username" : "...", "password" : "..." }
-  </p>
+  Alternatively you can set 'provide' to '["*"]' and get all translations.
+  <fs-i18n provider provide='["*"]' value="{{allStrings}}"></fs-i18n>
+  'allStrings' equals: 
+    { 
+      "translation1" : "...", 
+      "translation2" : "...", 
+      "translation3" : "...", 
+      "username" : "...", 
+      "password" : "..." 
+    }
+</p>
 ```
 
-@element i18-n
+@element fs-i18n
 @demo demo/index.html
-@homepage https://pkaske.github.io/i18-n
+@homepage http://familysearchelements.github.io/fs-i18n
 -->
 <dom-module id="fs-i18n"></dom-module>
 <script>
@@ -105,15 +111,14 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
 
     properties: {
       /**
-       * Shortcut property for `domain` and `msgid`.
-       * Use `domain-name.msgid` or just `msgid` to use default domain.
+       * Use `component-name.key` or just `key` to use default domain.
        */
       key: {
         type: String,
         value: null
       },
 
-      msgid: {
+      _msgid: {
         type: String,
         computed: '_computeMsgid(key)'
       },
@@ -122,7 +127,7 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
        * Language domain the element belongs to.
        * Only translation strings of that domain will be used.
        */
-      domain: {
+      _domain: {
         type: String,
         computed: '_computeDomain(key)'
       },
@@ -165,18 +170,18 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
     },
 
     /**
-     * Check if at least one `<i18-n-domain>` elements exists.
+     * Check if at least one `<fs-i18n-src>` elements exists.
      * Register the element for the right language domain, so it's gets updated with translation strings.
      */
     ready: function() {
       if (!window.I18nCache) {
-        console.warn(this.localName + ': Global I18nCache object missing. Have you added at least one i18-n-domain element?');
+        console.warn(this.localName + ': Global I18nCache object missing. Have you added at least one fs-i18n-domain element?');
         return;
       }
 
       this.domains = window.I18nCache.domains;
-      if (!this.domains[this.domain]) {
-        this.domains[this.domain] = {
+      if (!this.domains[this._domain]) {
+        this.domains[this._domain] = {
           locales: {},
           instances: []
         };
@@ -185,18 +190,18 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
 
     attached: function() {
       // Register instance to the domain.
-      this.domains[this.domain].instances.push(this);
+      this.domains[this._domain].instances.push(this);
 
-      var locale = this.domains[this.domain].activeLocale || 'en';
+      var locale = this.domains[this._domain].activeLocale || 'en';
 
       // Update the content already here if the locale is already loaded.
-      if (this.domains[this.domain].locales[locale]) {
+      if (this.domains[this._domain].locales[locale]) {
         this.update(locale);
       }
     },
 
     detached: function() {
-      var instances = this.domains[this.domain].instances;
+      var instances = this.domains[this._domain].instances;
       for (var i = 0, li = instances.length; i < li; ++i) {
         if (instances[i] === this) {
           instances.splice(i, 1);
@@ -206,6 +211,7 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
     },
 
     _computeMsgid: function(key) {
+      if (!key) return console.warn(this.localName + ':', 'cannot compute msgid, value of key is null');
       if (!~key.indexOf('.')) return key;
       key = key.split('.')
       key.shift();
@@ -213,6 +219,7 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
     },
 
     _computeDomain: function(key) {
+      if (!key) return console.warn(this.localName + ':', 'cannot compute domain, value of key is null');
       if (!~key.indexOf('.')) return 'default';
       return key.split('.')[0];
     },
@@ -228,20 +235,20 @@ In this mode the `msgid` property is ignored. Instead use the `provide` property
           return;
         }
 
-        var msg = this.domains[this.domain].locales[locale][this.msgid];
+        var msg = this.domains[this._domain].locales[locale][this._msgid];
         if (msg) {
           this._setValue(this.sanitizeHtml(msg));
           if (!this.provider) {
             this.innerHTML = this.value;
           }
         } else {
-          console.warn(this.localName + ': "' + this.msgid + '" message id was not found');
+          console.warn(this.localName + ': "' + this._msgid + '" message id was not found');
         }
       }.bind(this));
     },
 
     _updateProvider: function(locale) {
-      var locale = this.domains[this.domain].locales[locale];
+      var locale = this.domains[this._domain].locales[locale];
       var values = {};
 
       if (this.provide[0] == '*') {
