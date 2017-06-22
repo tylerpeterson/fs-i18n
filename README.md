@@ -1,3 +1,5 @@
+**DEPRECATED! AS OF Feb 16, 2016. Use https://github.com/jshcrowthe/wc-i18n instead.**
+
 [![Build Status](https://travis-ci.org/FamilySearchElements/fs-i18n.svg?branch=master)](https://travis-ci.org/FamilySearchElements/fs-i18n)
 # fs-i18n & fs-i18n-src
 
